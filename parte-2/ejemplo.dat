@@ -1,0 +1,20 @@
+data;
+set BUSES := a1 a2 a3 a4;
+set FRANJAS := s1 s2 s3;
+
+param kd := 0.5;
+param kp := 2.0;
+
+param d :=
+a1 10.0
+a2 15.0
+a3 8.0
+a4 20.0;
+
+param p :=
+a1 30.0
+a2 25.0
+a3 40.0
+a4 20.0;
+
+end;

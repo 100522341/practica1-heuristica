@@ -1,0 +1,59 @@
+Problem:    parte
+Rows:       12
+Columns:    16 (16 integer, 16 binary)
+Non-zeros:  60
+Status:     INTEGER OPTIMAL
+Objective:  OverallCost = 56.5 (MINimum)
+
+   No.   Row name        Activity     Lower bound   Upper bound
+------ ------------    ------------- ------------- -------------
+     1 OverallCost              56.5                             
+     2 CapacidadFranja[s1]
+                                   1                           1 
+     3 CapacidadFranja[s2]
+                                   1                           1 
+     4 CapacidadFranja[s3]
+                                   1                           1 
+     5 AsignacionAutobus[a1]
+                                   1                           1 
+     6 AsignacionAutobus[a2]
+                                   1                           1 
+     7 AsignacionAutobus[a3]
+                                   1                           1 
+     8 AsignacionAutobus[a4]
+                                   1                           1 
+     9 AuxY[a1]                    1             1             = 
+    10 AuxY[a2]                    1             1             = 
+    11 AuxY[a3]                    1             1             = 
+    12 AuxY[a4]                    1             1             = 
+
+   No. Column name       Activity     Lower bound   Upper bound
+------ ------------    ------------- ------------- -------------
+     1 x[a1,s1]     *              0             0             1 
+     2 x[a1,s2]     *              1             0             1 
+     3 x[a1,s3]     *              0             0             1 
+     4 x[a2,s1]     *              0             0             1 
+     5 x[a2,s2]     *              0             0             1 
+     6 x[a2,s3]     *              1             0             1 
+     7 x[a3,s1]     *              1             0             1 
+     8 x[a3,s2]     *              0             0             1 
+     9 x[a3,s3]     *              0             0             1 
+    10 x[a4,s1]     *              0             0             1 
+    11 x[a4,s2]     *              0             0             1 
+    12 x[a4,s3]     *              0             0             1 
+    13 y[a1]        *              0             0             1 
+    14 y[a2]        *              0             0             1 
+    15 y[a3]        *              0             0             1 
+    16 y[a4]        *              1             0             1 
+
+Integer feasibility conditions:
+
+KKT.PE: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+KKT.PB: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+End of output
