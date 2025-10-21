@@ -37,4 +37,3 @@ s.t. AuxY {i in BUSES}:
 	y[i] = 1 - sum{j in FRANJAS} x[i, j];
 
 /* TAMBIÉN PODEMOS PONER CONSTRAINT2 = 1 Y QUITAR CONSTRAINT3*/
-
