@@ -1,4 +1,3 @@
-
 /* Conjuntos */
 set BUSES;
 set FRANJAS;
