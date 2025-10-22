@@ -2,6 +2,7 @@
 import sys
 import os
 import subprocess
+import re
 
 
 def parse_input_file(input_file:str) -> tuple:
@@ -35,6 +36,7 @@ def parse_input_file(input_file:str) -> tuple:
     return (n, m, kd, kp, d, p)
 
 def generar_dat(output_file_name:str, tupla_elems:tuple):
+    """ Función que escribe en el dat todos los datos. No devuelve nada"""
     n = tupla_elems[0]
     m = tupla_elems[1]
     kd = tupla_elems[2]
@@ -88,8 +90,12 @@ def generar_dat(output_file_name:str, tupla_elems:tuple):
         file.write("end;\n")
 
 def ejecutar_glpk(mod_file, dat_file):
-    """Ejecuta GLPK y devuelve la salida"""
-    # Si el archivo output no existe, se crea vacío y luego se rellena
+    """Ejecuta GLPK y devuelve la salida en un fichero output.txt"""
+
+    if not os.path.exists("output.txt"):
+        with open("output.txt", "w") as f:
+            f.write("")
+
     result = subprocess.run(["glpsol", "--model", mod_file, "--data", dat_file, "--output", "output.txt"], text = True, capture_output=True)
 
     with open("output.txt", "r") as file:
@@ -97,9 +103,46 @@ def ejecutar_glpk(mod_file, dat_file):
 
     return output_text
 
-def parse_glpk_output(salida):
-    """Extrae la información que queremos de la salida de GLPK"""
-    pass
+def parse_glpk_output(output_text:str):
+    """Extrae la información que queremos del archivo de
+      salida de GLPK: output.txt"""
+    
+    # Seleccionamos las líneas
+    lineas_texto = output_text.split('\n')
+
+    linea_restricciones = lineas_texto[1]
+    linea_variables = lineas_texto[2]
+    linea_z = lineas_texto[5]
+
+    # Cogemos el texto que nos interesa de cada línea
+    num_restr = re.search(r'\d+', linea_restricciones)
+    texto_restr = "Número de restricciones: " + num_restr.group()
+
+    num_variables = re.search(r'\d+', linea_variables)
+    texto_variables = "Número de variables: " + num_variables.group()
+
+
+    z = re.search(r'\d+', linea_z)
+    texto_z = "z = "+ z.group()
+
+    # Ahora debemos seleccionar las líneas de las asignaciones, que no
+    # tienen posición fija
+
+    # bucle aqui para coger lo de cada asignacion
+    linea_prueba = lineas_texto[34]
+
+    # esto no funciona, ver por qué
+    patron_asignaciones = re.search(r'x\[[^\]]+\]\s+[01]', linea_prueba)
+    variable = patron_asignaciones.group(1)
+    actividad = patron_asignaciones.group(2)
+
+    print(patron_asignaciones, variable, actividad)
+
+
+    print(texto_z + ", " + texto_variables + ", " + texto_restr)
+
+    return 
+
 
 def print_solucion():
     """Imprimimos la solución"""
@@ -131,7 +174,8 @@ def main():
 
     tupla_datos = parse_input_file(input_file = input_file)
     generar_dat(output_file_name = output_file, tupla_elems=tupla_datos)
-    ejecutar_glpk(mod_file=mod_file, dat_file=output_file)
+    output_text = ejecutar_glpk(mod_file=mod_file, dat_file=output_file)
+    parse_glpk_output(output_text)
 
 
 

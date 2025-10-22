@@ -17,7 +17,7 @@ var y{BUSES} binary; /* 1 si autobús i NO es asignado a ninguna franja */
 
 /* Funcion objetivo */
 
-minimize OverallCost:
+minimize ImpactoAverias:
 	sum{i in BUSES, j in FRANJAS} kd * d[i] * x[i,j]
 	+
 	sum{i in BUSES} kp * p[i] * y[i];
