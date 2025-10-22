@@ -1,10 +1,4 @@
-# #! /usr/bin/env python3
-"""
-gen-2.py
-Uso: py gen-2.py fichero-entrada fichero-salida
-Genera un .dat compatible con el .mod del enunciado, ejecuta GLPK y muestra la solución.
-"""
-
+#! /usr/bin/env python3
 """
 gen-2.py
 Uso: py gen-2.py fichero-entrada fichero-salida
@@ -16,11 +10,11 @@ import os
 import subprocess
 import re
 
-# --- Funciones para leer el fichero de entrada ---
+# Funciones para leer el fichero de entrada
 def leer_entrada(fichero):
-    """Lee el fichero de entrada y devuelve n,m,u, c y o"""
-    with open(fichero, 'r') as f:
-        lineas = [l.strip() for l in f if l.strip()]
+    #Lee el fichero de entrada y devuelve n,m,u, c y o
+    with open(fichero, 'r') as file:
+        lineas = [l.strip() for l in file if l.strip()]
     if len(lineas) < 3:
         raise ValueError("Fichero demasiado corto")
     n = int(lineas[0])
@@ -34,44 +28,44 @@ def leer_entrada(fichero):
     o = [list(map(int, lineas[3+m+i].split())) for i in range(n)]
     return n,m,u,c,o
 
-# --- Generar fichero .dat para AMPL/GLPK ---
+# Generar fichero .dat para AMPL/GLPK
 def generar_dat(fichero_dat, n,m,u,c,o):
     buses = [f"a{i+1}" for i in range(m)]
     franjas = [f"s{i+1}" for i in range(n)]
     talleres = [f"t{i+1}" for i in range(u)]
-    with open(fichero_dat, "w") as f:
-        f.write("data;\n\n")
-        f.write("set BUSES := " + " ".join(buses) + ";\n")
-        f.write("set FRANJAS := " + " ".join(franjas) + ";\n")
-        f.write("set TALLERES := " + " ".join(talleres) + ";\n\n")
+    with open(fichero_dat, "w") as file:
+        file.write("data;\n\n")
+        file.write("set BUSES := " + " ".join(buses) + ";\n")
+        file.write("set FRANJAS := " + " ".join(franjas) + ";\n")
+        file.write("set TALLERES := " + " ".join(talleres) + ";\n\n")
         # c[i,l]
-        f.write("param c : " + " ".join(buses) + " :=\n")
+        file.write("param c : " + " ".join(buses) + " :=\n")
         for i in range(m):
-            f.write(buses[i] + " " + " ".join(str(c[i][j]) for j in range(m)) + "\n")
-        f.write(";\n\n")
+            file.write(buses[i] + " " + " ".join(str(c[i][j]) for j in range(m)) + "\n")
+        file.write(";\n\n")
         # o[j,k]
-        f.write("param o : " + " ".join(talleres) + " :=\n")
+        file.write("param o : " + " ".join(talleres) + " :=\n")
         for j in range(n):
-            f.write(franjas[j] + " " + " ".join(str(o[j][k]) for k in range(u)) + "\n")
-        f.write(";\n\nend;\n")
+            file.write(franjas[j] + " " + " ".join(str(o[j][k]) for k in range(u)) + "\n")
+        file.write(";\n\nend;\n")
 
-# --- Ejecutar GLPK ---
+# Ejecutar GLPK
 def ejecutar_glpk(mod_file, dat_file):
-    """Ejecuta glpsol y devuelve el contenido de la salida"""
+    #Ejecuta glpsol y devuelve el contenido de la salida
     try:
         subprocess.run(["glpsol", "--model", mod_file, "--data", dat_file, "--output", "glpk_out.txt"], check=True)
     except FileNotFoundError:
         print("Error: glpsol no encontrado. Instala GLPK y ponlo en el PATH.")
         sys.exit(1)
-    with open("glpk_out.txt", "r") as f:
-        return f.read()
+    with open("glpk_out.txt", "r") as file:
+        return file.read()
 
-# --- Extraer objetivo ---
+# Extraer objetivo
 def extraer_objetivo(texto):
     m = re.search(r"Objective.*=\s*([0-9\.Ee+-]+)", texto)
     return float(m.group(1)) if m else None
 
-# --- Extraer variables x[i,j,k] ---
+# Extraer variables x[i,j,k]
 def extraer_x(texto):
     x_vals = {}
     patron = re.compile(r'x\[(.*?)\]\s+\*?\s*([01])')
@@ -80,7 +74,7 @@ def extraer_x(texto):
         x_vals[(partes[0], partes[1], partes[2])] = int(match.group(2))
     return x_vals
 
-# --- Imprimir asignaciones ---
+# Imprimir asignaciones
 def imprimir_asignaciones(x_vals):
     asignaciones = {}
     for (bus, franja, taller), val in x_vals.items():
@@ -91,16 +85,16 @@ def imprimir_asignaciones(x_vals):
         franja,taller = asignaciones[bus]
         print(f"Bus {bus} -> franja {franja}, taller {taller}")
 
-# --- Contar variables y restricciones ---
+# Contar variables y restricciones
 def contar_vars_restricciones(n,m,u):
     num_x = m*n*u
     num_y = m*m*n
     total_vars = num_x + num_y
-    pairs = m*(m-1)//2  # manual en lugar de comb()
+    pairs = m*(m-1)//2  
     total_constraints = m + m*n*u + n*u + 3*pairs*n
     return total_vars, total_constraints
 
-# --- Función principal ---
+# Función principal
 def main():
     if len(sys.argv)!=3:
         print("Uso: py gen-2.py fichero-entrada fichero-salida")
