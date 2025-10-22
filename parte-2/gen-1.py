@@ -98,18 +98,22 @@ def ejecutar_glpk(mod_file, dat_file):
 
     result = subprocess.run(["glpsol", "--model", mod_file, "--data", dat_file, "--output", "output.txt"], text = True, capture_output=True)
 
-    # TODO: HAY QUE CONTEMPLAR LAS SALIDAS INFACTIBLES
-
     with open("output.txt", "r") as file:
         output_text = file.read()
+    
+    # Verificamos si GLPK encontró solución óptima
+    if "OPTIMAL SOLUTION FOUND" not in result.stdout:
+        raise RuntimeError("GLPK no encontró solución factible para el problema.")
+    # Aunque NO es necesario, el problema será siempre factible ya que no hay un mínimo de 
+    # franjas ni de autobuses que deban ser asignados / recibir autobuses asignados
 
     return output_text
 
 def parse_glpk_output(output_text:str):
     """Extrae la información que queremos del archivo de
-      salida de GLPK: output.txt"""
+      salida de GLPK: output.txt y la imprime formateada"""
     
-    # Seleccionamos las líneas
+    # Seleccionamos las líneas que siempre estarán en el mismo sitio
     lineas_texto = output_text.split('\n')
 
     linea_restricciones = lineas_texto[1]
@@ -124,34 +128,68 @@ def parse_glpk_output(output_text:str):
     texto_variables = "Número de variables: " + num_variables.group()
 
 
-    z = re.search(r'\d+', linea_z)
+    z = re.search(r'\d+(?:\.\d+)?', linea_z)
     texto_z = "z = "+ z.group()
 
     # Ahora debemos seleccionar las líneas de las asignaciones, que no
     # tienen posición fija
 
+    # Empezamos por ir a la primera línea de las asignaciones
+    contador = 0
+    index = 0
+    while index < len(lineas_texto) and contador < 2:
+        if lineas_texto[index][:6] == "------":
+            contador += 1
+        index += 1    
 
+    # Vamos asignación por asignación
+    all_buses = []
+    buses_asignados = []
+    franja_bus = [] # franja_bus[i] es la franja asociada al bus buses_asignados[i]
+    buses_no_asignados = []
+    
+    while lineas_texto[index] != "":
+        if re.match(r'\s*\d+\s+y\[[^\]]+\]', lineas_texto[index]): # Si encontramos la linea y[]
+            break
+        linea_a_procesar = lineas_texto[index]
+        
+        # sacar x[ai,sj] y numero actividad 0/1
+        patron_asignaciones = re.search(r'(x\[[^\]]+\])\s+\*\s+([01])', linea_a_procesar)
 
-    # bucle aqui para coger lo de cada asignacion
-    linea_prueba = lineas_texto[34]
-    print(linea_prueba)
+        # sacar ai (group1) sj (group2)
+        bus_franja = re.match(r'x\[(a\d+),(s\d+)\]', patron_asignaciones.group(1)) 
 
-    # esto no funciona, ver por qué
-    patron_asignaciones = re.search(r'(x\[[^\]]+\])\s+\*\s+([01])', linea_prueba)
+        # Añadimos todos los buses a una lista para luego imprimir por separado
+        if bus_franja.group(1) not in all_buses:
+            all_buses.append(bus_franja.group(1))
 
-    print(patron_asignaciones.group(2))
+        if patron_asignaciones.group(2) == "1": # Si ese autobús está asignado: añadimos a lista asignados
+            buses_asignados.append(bus_franja.group(1))
+            franja_bus.append(bus_franja.group(2))
 
+        index += 1
 
-    print(texto_z + ", " + texto_variables + ", " + texto_restr)
+    
+    print("\n"+ texto_z + ", " + texto_variables + ", " + texto_restr + "\n")
+    
+    # Rellenamos la lista de no asignados
+    for bus in all_buses:
+        if bus not in buses_asignados:
+            buses_no_asignados.append(bus)
 
-    return 
+    # Finalmente, imprimimos las asignaciones 
+    j = 0
+    while j < len(buses_asignados):
+        print("Autobús", buses_asignados[j], "asignado a franja", franja_bus[j])
+        j += 1
 
+    i = 0
+    while i < len(buses_no_asignados):
+        print("Autobús", buses_no_asignados[i], "no asignado a ninguna franja")
+        i += 1
+    print("\n") # Más legibilidad
 
-def print_solucion():
-    """Imprimimos la solución"""
-    pass
-
-
+    # TODO: ¿DEBEMOS IMPRIMIR LAS FRANJAS A LAS QUE NO SE LES ASIGNA NINGÚN AUTOBÚS?
 
 def main():
 
@@ -179,6 +217,11 @@ def main():
     generar_dat(output_file_name = output_file, tupla_elems=tupla_datos)
     output_text = ejecutar_glpk(mod_file=mod_file, dat_file=output_file)
     parse_glpk_output(output_text)
+
+    # Eliminamos el output.txt porque no hace falta
+    # Lo hacemos cutre porque el profesor dijo que el script daba igual
+    if os.path.exists("output.txt"):
+        os.remove("output.txt")
 
 
 
