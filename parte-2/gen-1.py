@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!env python3
 import sys
 import os
 import subprocess
@@ -98,6 +98,8 @@ def ejecutar_glpk(mod_file, dat_file):
 
     result = subprocess.run(["glpsol", "--model", mod_file, "--data", dat_file, "--output", "output.txt"], text = True, capture_output=True)
 
+    # TODO: HAY QUE CONTEMPLAR LAS SALIDAS INFACTIBLES
+
     with open("output.txt", "r") as file:
         output_text = file.read()
 
@@ -128,15 +130,16 @@ def parse_glpk_output(output_text:str):
     # Ahora debemos seleccionar las líneas de las asignaciones, que no
     # tienen posición fija
 
+
+
     # bucle aqui para coger lo de cada asignacion
     linea_prueba = lineas_texto[34]
+    print(linea_prueba)
 
     # esto no funciona, ver por qué
-    patron_asignaciones = re.search(r'x\[[^\]]+\]\s+[01]', linea_prueba)
-    variable = patron_asignaciones.group(1)
-    actividad = patron_asignaciones.group(2)
+    patron_asignaciones = re.search(r'(x\[[^\]]+\])\s+\*\s+([01])', linea_prueba)
 
-    print(patron_asignaciones, variable, actividad)
+    print(patron_asignaciones.group(2))
 
 
     print(texto_z + ", " + texto_variables + ", " + texto_restr)
