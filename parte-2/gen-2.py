@@ -1,3 +1,10 @@
+# #! /usr/bin/env python3
+"""
+gen-2.py
+Uso: py gen-2.py fichero-entrada fichero-salida
+Genera un .dat compatible con el .mod del enunciado, ejecuta GLPK y muestra la solución.
+"""
+
 """
 gen-2.py
 Uso: py gen-2.py fichero-entrada fichero-salida
@@ -8,7 +15,6 @@ import sys
 import os
 import subprocess
 import re
-from math import comb
 
 # --- Funciones para leer el fichero de entrada ---
 def leer_entrada(fichero):
@@ -90,7 +96,7 @@ def contar_vars_restricciones(n,m,u):
     num_x = m*n*u
     num_y = m*m*n
     total_vars = num_x + num_y
-    pairs = comb(m,2) if m>=2 else 0
+    pairs = m*(m-1)//2  # manual en lugar de comb()
     total_constraints = m + m*n*u + n*u + 3*pairs*n
     return total_vars, total_constraints
 
