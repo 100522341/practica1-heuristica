@@ -1,0 +1,160 @@
+Problem:    parte
+Rows:       55
+Columns:    27 (27 integer, 27 binary)
+Non-zeros:  162
+Status:     INTEGER OPTIMAL
+Objective:  Z = 0 (MINimum)
+
+   No.   Row name        Activity     Lower bound   Upper bound
+------ ------------    ------------- ------------- -------------
+     1 Z                           0                             
+     2 AsignacionBuses[a1]
+                                   1             1             = 
+     3 AsignacionBuses[a2]
+                                   1             1             = 
+     4 AsignacionBuses[a3]
+                                   1             1             = 
+     5 FranjasDisponibles[a1,s1,t1]
+                                   1                           1 
+     6 FranjasDisponibles[a1,s1,t2]
+                                   0                           1 
+     7 FranjasDisponibles[a1,s2,t1]
+                                   0                           1 
+     8 FranjasDisponibles[a1,s2,t2]
+                                   0                          -0 
+     9 FranjasDisponibles[a1,s3,t1]
+                                   0                          -0 
+    10 FranjasDisponibles[a1,s3,t2]
+                                   0                           1 
+    11 FranjasDisponibles[a2,s1,t1]
+                                   0                           1 
+    12 FranjasDisponibles[a2,s1,t2]
+                                   0                           1 
+    13 FranjasDisponibles[a2,s2,t1]
+                                   1                           1 
+    14 FranjasDisponibles[a2,s2,t2]
+                                   0                          -0 
+    15 FranjasDisponibles[a2,s3,t1]
+                                   0                          -0 
+    16 FranjasDisponibles[a2,s3,t2]
+                                   0                           1 
+    17 FranjasDisponibles[a3,s1,t1]
+                                   0                           1 
+    18 FranjasDisponibles[a3,s1,t2]
+                                   0                           1 
+    19 FranjasDisponibles[a3,s2,t1]
+                                   0                           1 
+    20 FranjasDisponibles[a3,s2,t2]
+                                   0                          -0 
+    21 FranjasDisponibles[a3,s3,t1]
+                                   0                          -0 
+    22 FranjasDisponibles[a3,s3,t2]
+                                   1                           1 
+    23 Capacidad[s1,t1]
+                                   1                           1 
+    24 Capacidad[s1,t2]
+                                   0                           1 
+    25 Capacidad[s2,t1]
+                                   1                           1 
+    26 Capacidad[s2,t2]
+                                   0                           1 
+    27 Capacidad[s3,t1]
+                                   0                           1 
+    28 Capacidad[s3,t2]
+                                   1                           1 
+    29 YBusIFranjaJ[a1,a2,s1]
+                                  -1                          -0 
+    30 YBusIFranjaJ[a1,a2,s2]
+                                   0                          -0 
+    31 YBusIFranjaJ[a1,a2,s3]
+                                   0                          -0 
+    32 YBusIFranjaJ[a1,a3,s1]
+                                  -1                          -0 
+    33 YBusIFranjaJ[a1,a3,s2]
+                                   0                          -0 
+    34 YBusIFranjaJ[a1,a3,s3]
+                                   0                          -0 
+    35 YBusIFranjaJ[a2,a3,s1]
+                                   0                          -0 
+    36 YBusIFranjaJ[a2,a3,s2]
+                                  -1                          -0 
+    37 YBusIFranjaJ[a2,a3,s3]
+                                   0                          -0 
+    38 YBusLFranjaJ[a1,a2,s1]
+                                   0                          -0 
+    39 YBusLFranjaJ[a1,a2,s2]
+                                  -1                          -0 
+    40 YBusLFranjaJ[a1,a2,s3]
+                                   0                          -0 
+    41 YBusLFranjaJ[a1,a3,s1]
+                                   0                          -0 
+    42 YBusLFranjaJ[a1,a3,s2]
+                                   0                          -0 
+    43 YBusLFranjaJ[a1,a3,s3]
+                                  -1                          -0 
+    44 YBusLFranjaJ[a2,a3,s1]
+                                   0                          -0 
+    45 YBusLFranjaJ[a2,a3,s2]
+                                   0                          -0 
+    46 YBusLFranjaJ[a2,a3,s3]
+                                  -1                          -0 
+    47 MismaFranja[a1,a2,s1]
+                                  -1            -1               
+    48 MismaFranja[a1,a2,s2]
+                                  -1            -1               
+    49 MismaFranja[a1,a2,s3]
+                                   0            -1               
+    50 MismaFranja[a1,a3,s1]
+                                  -1            -1               
+    51 MismaFranja[a1,a3,s2]
+                                   0            -1               
+    52 MismaFranja[a1,a3,s3]
+                                  -1            -1               
+    53 MismaFranja[a2,a3,s1]
+                                   0            -1               
+    54 MismaFranja[a2,a3,s2]
+                                  -1            -1               
+    55 MismaFranja[a2,a3,s3]
+                                  -1            -1               
+
+   No. Column name       Activity     Lower bound   Upper bound
+------ ------------    ------------- ------------- -------------
+     1 x[a1,s1,t1]  *              1             0             1 
+     2 x[a1,s1,t2]  *              0             0             1 
+     3 x[a1,s2,t1]  *              0             0             1 
+     4 x[a1,s2,t2]  *              0             0             1 
+     5 x[a1,s3,t1]  *              0             0             1 
+     6 x[a1,s3,t2]  *              0             0             1 
+     7 x[a2,s1,t1]  *              0             0             1 
+     8 x[a2,s1,t2]  *              0             0             1 
+     9 x[a2,s2,t1]  *              1             0             1 
+    10 x[a2,s2,t2]  *              0             0             1 
+    11 x[a2,s3,t1]  *              0             0             1 
+    12 x[a2,s3,t2]  *              0             0             1 
+    13 x[a3,s1,t1]  *              0             0             1 
+    14 x[a3,s1,t2]  *              0             0             1 
+    15 x[a3,s2,t1]  *              0             0             1 
+    16 x[a3,s2,t2]  *              0             0             1 
+    17 x[a3,s3,t1]  *              0             0             1 
+    18 x[a3,s3,t2]  *              1             0             1 
+    19 y[a1,a2,s1]  *              0             0             1 
+    20 y[a1,a2,s2]  *              0             0             1 
+    21 y[a1,a2,s3]  *              0             0             1 
+    22 y[a1,a3,s1]  *              0             0             1 
+    23 y[a1,a3,s2]  *              0             0             1 
+    24 y[a1,a3,s3]  *              0             0             1 
+    25 y[a2,a3,s1]  *              0             0             1 
+    26 y[a2,a3,s2]  *              0             0             1 
+    27 y[a2,a3,s3]  *              0             0             1 
+
+Integer feasibility conditions:
+
+KKT.PE: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+KKT.PB: max.abs.err = 0.00e+00 on row 0
+        max.rel.err = 0.00e+00 on row 0
+        High quality
+
+End of output

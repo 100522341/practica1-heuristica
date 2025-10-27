@@ -34,13 +34,13 @@ s.t. Capacidad {j in FRANJAS, k in TALLERES}:
     sum {i in BUSES} x[i,j,k] <= 1;
 
 /* Constraint4: y[i,l,j] solo puede ser 1 si el bus i está en la franja j */
-s.t. YBusIFranjaJ {i in BUSES, l in BUSES: i < l, j in FRANJAS}:
+s.t. YBusIFranjaJ {i in BUSES, l in BUSES, j in FRANJAS: i < l}:
     y[i,l,j] <= sum {k in TALLERES} x[i,j,k];
 
 /* Constraint5: y[i,l,j] solo puede ser 1 si el bus l está en la franja j */
-s.t. YBusLFranjaJ {i in BUSES, l in BUSES: i < l, j in FRANJAS}:
+s.t. YBusLFranjaJ {i in BUSES, l in BUSES, j in FRANJAS: i < l}:
     y[i,l,j] <= sum {k in TALLERES} x[l,j,k];
 
 /* Constraint6: y[i,l,j] se activa si ambos buses están en la franja j */
-s.t. MismaFranja {i in BUSES, l in BUSES: i < l, j in FRANJAS}:
+s.t. MismaFranja {i in BUSES, l in BUSES, j in FRANJAS: i < l}:
     y[i,l,j] >= sum {k in TALLERES} (x[i,j,k] + x[l,j,k]) - 1;
