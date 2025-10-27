@@ -1,4 +1,5 @@
-#! /usr/bin/env python3
+#!env python3
+
 """
 gen-2.py
 Uso: py gen-2.py fichero-entrada fichero-salida
