@@ -10,118 +10,251 @@ import os
 import subprocess
 import re
 
-# Funciones para leer el fichero de entrada
-def leer_entrada(fichero):
-    #Lee el fichero de entrada y devuelve n,m,u, c y o
-    with open(fichero, 'r') as file:
-        lineas = [l.strip() for l in file if l.strip()]
-    if len(lineas) < 3:
-        raise ValueError("Fichero demasiado corto")
-    n = int(lineas[0])
-    m = int(lineas[1])
-    u = int(lineas[2])
-    if len(lineas) < 3 + m + n:
-        raise ValueError("Faltan líneas en el fichero")
-    # matriz c
-    c = [list(map(int, lineas[3+i].split())) for i in range(m)]
-    # matriz o
-    o = [list(map(int, lineas[3+m+i].split())) for i in range(n)]
-    return n,m,u,c,o
+def parse_input_file(input_file: str) -> tuple:
+    """Función que recibe el fichero de entrada y lo procesa. 
+    Devuelve una tupla con los datos: (n, m, u, c, o)
+    
+    Formato del fichero de entrada:
+    <n> <m> <u>
+    <c11 c12 ... c1m>
+    ...
+    <cm1 cm2 ... cmm>
+    <o11 o12 ... o1u>
+    ...
+    <on1 on2 ... onu>
+    """
+    with open(input_file, "r") as file:
+        archivo_en_lineas = file.readlines()
 
-# Generar fichero .dat para AMPL/GLPK
-def generar_dat(fichero_dat, n,m,u,c,o):
-    buses = [f"a{i+1}" for i in range(m)]
-    franjas = [f"s{i+1}" for i in range(n)]
-    talleres = [f"t{i+1}" for i in range(u)]
-    with open(fichero_dat, "w") as file:
+    # Quitamos saltos de línea y líneas vacías
+    archivo_en_lineas = [linea.strip() for linea in archivo_en_lineas if linea.strip() != ""]
+
+    # --- Cabecera ---
+    linea_cabecera = archivo_en_lineas[0]
+
+    n = int(linea_cabecera.split()[0])  # número de franjas
+    m = int(linea_cabecera.split()[1])  # número de autobuses
+    u = int(linea_cabecera.split()[2])  # número de talleres
+
+    # --- Matriz c ---
+    # Las siguientes m líneas corresponden a la matriz de pasajeros c[i][j]
+    c = []
+    for i in range(1, 1 + m):
+        fila = list(map(float, archivo_en_lineas[i].split()))
+        if len(fila) != m:
+            raise ValueError(f"Línea {i+1} de la matriz c tiene {len(fila)} elementos en lugar de {m}.")
+        c.append(fila)
+
+    # --- Matriz o ---
+    # A continuación, las siguientes n líneas son la matriz de disponibilidad o[i][j]
+    o = []
+    for i in range(1 + m, 1 + m + n):
+        fila = list(map(int, archivo_en_lineas[i].split()))
+        if len(fila) != u:
+            raise ValueError(f"Línea {i+1} de la matriz o tiene {len(fila)} elementos en lugar de {u}.")
+        o.append(fila)
+
+    return (n, m, u, c, o)
+
+def generar_dat(output_file_name: str, tupla_elems: tuple):
+    """Función que escribe en el .dat todos los datos necesarios para GLPK.
+    No devuelve nada. 
+    Recibe la tupla (n, m, u, c, o) devuelta por parse_input_file().
+    """
+
+    n = tupla_elems[0]
+    m = tupla_elems[1]
+    u = tupla_elems[2]
+    c = tupla_elems[3]
+    o = tupla_elems[4]
+
+    # Abrimos el fichero .dat para escribirlo
+    with open(output_file_name, "w") as file:
+
+        # --- Cabecera ---
         file.write("data;\n\n")
-        file.write("set BUSES := " + " ".join(buses) + ";\n")
-        file.write("set FRANJAS := " + " ".join(franjas) + ";\n")
-        file.write("set TALLERES := " + " ".join(talleres) + ";\n\n")
-        # c[i,l]
-        file.write("param c : " + " ".join(buses) + " :=\n")
-        for i in range(m):
-            file.write(buses[i] + " " + " ".join(str(c[i][j]) for j in range(m)) + "\n")
+
+        # --- Conjuntos ---
+        file.write("set BUSES := ")
+        for i in range(1, m):
+            file.write("a" + str(i) + " ")
+        file.write("a" + str(m) + ";\n")
+
+        file.write("set FRANJAS := ")
+        for i in range(1, n):
+            file.write("s" + str(i) + " ")
+        file.write("s" + str(n) + ";\n")
+
+        file.write("set TALLERES := ")
+        for i in range(1, u):
+            file.write("t" + str(i) + " ")
+        file.write("t" + str(u) + ";\n\n")
+
+        # --- Parámetro c ---
+        # Matriz cuadrada de tamaño m x m (pasajeros compartidos)
+        file.write("param c : ")
+        for i in range(1, m + 1):
+            file.write("a" + str(i) + " ")
+        file.write(":=\n")
+
+        for i in range(1, m + 1):
+            file.write("a" + str(i) + " ")
+            for j in range(1, m + 1):
+                file.write(str(c[i-1][j-1]) + " ")
+            file.write("\n")
+
         file.write(";\n\n")
-        # o[j,k]
-        file.write("param o : " + " ".join(talleres) + " :=\n")
-        for j in range(n):
-            file.write(franjas[j] + " " + " ".join(str(o[j][k]) for k in range(u)) + "\n")
-        file.write(";\n\nend;\n")
 
-# Ejecutar GLPK
+        # --- Parámetro o ---
+        # Matriz n x u de disponibilidad de franjas por taller
+        file.write("param o : ")
+        for j in range(1, u + 1):
+            file.write("t" + str(j) + " ")
+        file.write(":=\n")
+
+        for i in range(1, n + 1):
+            file.write("s" + str(i) + " ")
+            for j in range(1, u + 1):
+                file.write(str(o[i-1][j-1]) + " ")
+            file.write("\n")
+
+        file.write(";\n\n")
+
+        # --- Fin del fichero ---
+        file.write("end;\n")
+
+
 def ejecutar_glpk(mod_file, dat_file):
-    #Ejecuta glpsol y devuelve el contenido de la salida
-    try:
-        subprocess.run(["glpsol", "--model", mod_file, "--data", dat_file, "--output", "glpk_out.txt"], check=True)
-    except FileNotFoundError:
-        print("Error: glpsol no encontrado. Instala GLPK y ponlo en el PATH.")
-        sys.exit(1)
-    with open("glpk_out.txt", "r") as file:
-        return file.read()
+    """Ejecuta GLPK con el modelo y el fichero de datos indicados. 
+    Devuelve el texto completo de la salida del solver."""
 
-# Extraer objetivo
-def extraer_objetivo(texto):
-    m = re.search(r"Objective.*=\s*([0-9\.Ee+-]+)", texto)
-    return float(m.group(1)) if m else None
+    # Creamos (o vaciamos) un archivo temporal donde GLPK escribirá su salida
+    if not os.path.exists("output.txt"):
+        with open("output.txt", "w") as f:
+            f.write("")
 
-# Extraer variables x[i,j,k]
-def extraer_x(texto):
-    x_vals = {}
-    patron = re.compile(r'x\[(.*?)\]\s+\*?\s*([01])')
-    for match in patron.finditer(texto):
-        partes = match.group(1).split(",")
-        x_vals[(partes[0], partes[1], partes[2])] = int(match.group(2))
-    return x_vals
+    # Ejecutamos GLPK mediante subprocess
+    result = subprocess.run(
+        ["glpsol", "--model", mod_file, "--data", dat_file, "--output", "output.txt"],
+        text=True,
+        capture_output=True
+    )
 
-# Imprimir asignaciones
-def imprimir_asignaciones(x_vals):
-    asignaciones = {}
-    for (bus, franja, taller), val in x_vals.items():
-        if val == 1:
-            asignaciones[bus] = (franja, taller)
-    print("\nAsignaciones (autobús -> franja, taller):")
-    for bus in sorted(asignaciones.keys()):
-        franja,taller = asignaciones[bus]
-        print(f"Bus {bus} -> franja {franja}, taller {taller}")
+    # Leemos la salida del fichero generado
+    with open("output.txt", "r") as file:
+        output_text = file.read()
 
-# Contar variables y restricciones
-def contar_vars_restricciones(n,m,u):
-    num_x = m*n*u
-    num_y = m*m*n
-    total_vars = num_x + num_y
-    pairs = m*(m-1)//2  
-    total_constraints = m + m*n*u + n*u + 3*pairs*n
-    return total_vars, total_constraints
+    # Verificamos si GLPK encontró una solución óptima
+    if "OPTIMAL SOLUTION FOUND" not in result.stdout:
+        raise RuntimeError("GLPK no encontró una solución factible para el problema.")
 
-# Función principal
+    # Devolvemos el texto completo (lo parsearemos después)
+    return output_text
+
+
+def parse_glpk_output(output_text: str):
+    """Extrae la información relevante de la salida de GLPK y la muestra por pantalla.
+    Muestra el valor óptimo, número de variables y restricciones, y las asignaciones
+    de cada autobús a su franja y taller correspondiente.
+    """
+
+    # --- Leemos las líneas y limpiamos ---
+    lineas_texto = output_text.split('\n')
+
+    # Buscamos las líneas clave de cabecera (igual que en gen-1)
+    linea_restricciones = lineas_texto[1]
+    linea_variables = lineas_texto[2]
+    linea_z = lineas_texto[5]
+
+    # --- Extraemos con regex ---
+    num_restr = re.search(r'\d+', linea_restricciones)
+    texto_restr = "Número de restricciones: " + num_restr.group()
+
+    num_variables = re.search(r'\d+', linea_variables)
+    texto_variables = "Número de variables: " + num_variables.group()
+
+    z = re.search(r'\d+(?:\.\d+)?', linea_z)
+    texto_z = "z = " + z.group()
+
+    # --- Buscamos la tabla de variables (tras los guiones '------') ---
+    contador = 0
+    index = 0
+    while index < len(lineas_texto) and contador < 2:
+        if lineas_texto[index][:6] == "------":
+            contador += 1
+        index += 1
+
+    # --- Listas auxiliares ---
+    asignaciones = []  # [(aX, sY, tZ)]
+    all_buses = []
+
+    # Recorremos líneas hasta fin de bloque
+    while index < len(lineas_texto) and lineas_texto[index] != "":
+        # Solo procesamos variables x[a,s,t]
+        patron = re.search(r'(x\[[^\]]+\])\s+\*\s+([01])', lineas_texto[index])
+        if patron:
+            # Extraemos el contenido x[a,s,t]
+            tripleta = re.match(r'x\[(a\d+),(s\d+),(t\d+)\]', patron.group(1))
+            if tripleta:
+                bus = tripleta.group(1)
+                franja = tripleta.group(2)
+                taller = tripleta.group(3)
+                valor = patron.group(2)
+
+                if bus not in all_buses:
+                    all_buses.append(bus)
+                if valor == "1":
+                    asignaciones.append((bus, franja, taller))
+        index += 1
+
+    # --- Impresión formateada ---
+    print("\n" + texto_z + ", " + texto_variables + ", " + texto_restr + "\n")
+
+    # Mostramos las asignaciones
+    for bus, franja, taller in asignaciones:
+        print("Autobús", bus, "asignado a franja", franja, "en taller", taller)
+
+    print("\n")  # Línea en blanco final para legibilidad
+
+
 def main():
-    if len(sys.argv)!=3:
-        print("Uso: py gen-2.py fichero-entrada fichero-salida")
-        sys.exit(1)
-    input_file = sys.argv[1]
-    output_dat = sys.argv[2]
-    if not os.path.exists(input_file):
-        print("Error: fichero de entrada no existe:", input_file)
-        sys.exit(1)
-    mod_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "parte-2-2.mod")
-    if not os.path.exists(mod_file):
-        print("Error: fichero .mod no encontrado:", mod_file)
-        sys.exit(1)
-    try:
-        n,m,u,c,o = leer_entrada(input_file)
-        generar_dat(output_dat, n,m,u,c,o)
-        salida = ejecutar_glpk(mod_file, output_dat)
-        objetivo = extraer_objetivo(salida)
-        x_vals = extraer_x(salida)
-        total_vars, total_constraints = contar_vars_restricciones(n,m,u)
-        print(f"Valor óptimo: {objetivo}")
-        print(f"Número de variables de decisión: {total_vars}")
-        print(f"Número de restricciones: {total_constraints}")
-        imprimir_asignaciones(x_vals)
-    except Exception as e:
-        print("Error:", e)
+    """Función principal: controla todo el flujo del programa.
+    Lee los argumentos, procesa el fichero de entrada, genera el .dat,
+    ejecuta GLPK con el modelo y muestra el resultado formateado.
+    """
+
+    # --- Comprobaciones iniciales ---
+    if len(sys.argv) != 3:
+        print("Error: número de argumentos incorrecto")
         sys.exit(1)
 
-if __name__=="__main__":
+    input_file = sys.argv[1]
+    output_file = sys.argv[2]
+
+    # Obtenemos la carpeta donde está el script (para encontrar el .mod)
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+
+    # Construimos la ruta completa al modelo de la parte 2.2.2
+    mod_file = os.path.join(script_dir, "parte-2-2.mod")
+
+    if not os.path.exists(input_file):
+        print("Error: el archivo de entrada no existe")
+        sys.exit(1)
+
+    if not os.path.exists(mod_file):
+        print("Error: el archivo de modelo parte-2-2.mod no se encuentra")
+        sys.exit(1)
+
+    # --- Ejecución principal ---
+    tupla_datos = parse_input_file(input_file=input_file)
+    generar_dat(output_file_name=output_file, tupla_elems=tupla_datos)
+    output_text = ejecutar_glpk(mod_file=mod_file, dat_file=output_file)
+    parse_glpk_output(output_text)
+
+    # --- Limpieza final ---
+    if os.path.exists("output.txt"):
+        os.remove("output.txt")
+
+
+if __name__ == "__main__":
     main()
