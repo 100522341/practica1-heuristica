@@ -103,11 +103,13 @@ def ejecutar_glpk(mod_file, dat_file):
     
     # Verificamos si GLPK encontró solución óptima
     if "OPTIMAL SOLUTION FOUND" not in result.stdout:
-        raise RuntimeError("GLPK no encontró solución factible para el problema.")
+        return("GLPK no encontró una solución factible para el problema.")
     # Aunque NO es necesario, el problema será siempre factible ya que no hay un mínimo de 
     # franjas ni de autobuses que deban ser asignados / recibir autobuses asignados
 
+    # Devolvemos el texto completo (lo parsearemos después)
     return output_text
+    
 
 def parse_glpk_output(output_text:str):
     """Extrae la información que queremos del archivo de

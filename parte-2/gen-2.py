@@ -145,8 +145,9 @@ def ejecutar_glpk(mod_file, dat_file):
         output_text = file.read()
 
     # Verificamos si GLPK encontró una solución óptima
+    # TODO: manejo de soluciones no factibles
     if "OPTIMAL SOLUTION FOUND" not in result.stdout:
-        raise RuntimeError("GLPK no encontró una solución factible para el problema.")
+        return("GLPK no encontró una solución factible para el problema.")
 
     # Devolvemos el texto completo (lo parsearemos después)
     return output_text
@@ -157,6 +158,12 @@ def parse_glpk_output(output_text: str):
     Muestra el valor óptimo, número de variables y restricciones, y las asignaciones
     de cada autobús a su franja y taller correspondiente.
     """
+
+    # SI NO HAY SOLUCIÓN ÓPTIMA:
+    if output_text == "GLPK no encontró una solución factible para el problema.":
+        print(output_text)
+        return
+
 
     # --- Leemos las líneas y limpiamos ---
     lineas_texto = output_text.split('\n')
