@@ -98,6 +98,8 @@ def ejecutar_glpk(mod_file, dat_file):
 
     result = subprocess.run(["glpsol", "--model", mod_file, "--data", dat_file, "--output", "output.txt"], text = True, capture_output=True)
 
+    # PARA AMBOS ARCHIVOS PENSAMOS QUE HABIA QUE GENERAR UN FICHERO DE SALIDA, FINALMENTE NO,
+    # SIMPLEMENTE BORRAMOS EL ARCHIVO AL FINAL
     with open("output.txt", "r") as file:
         output_text = file.read()
     

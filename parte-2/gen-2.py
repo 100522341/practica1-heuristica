@@ -140,6 +140,8 @@ def ejecutar_glpk(mod_file, dat_file):
         text=True,
         capture_output=True
     )
+    # PARA AMBOS ARCHIVOS PENSAMOS QUE HABIA QUE GENERAR UN FICHERO DE SALIDA, FINALMENTE NO,
+    # SIMPLEMENTE BORRAMOS EL ARCHIVO AL FINAL
 
     # Leemos la salida del fichero generado
     with open("output.txt", "r") as file:
