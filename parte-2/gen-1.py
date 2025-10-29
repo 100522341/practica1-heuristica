@@ -193,8 +193,6 @@ def parse_glpk_output(output_text:str):
         i += 1
     print("\n") # Más legibilidad
 
-    # TODO: ¿DEBEMOS IMPRIMIR LAS FRANJAS A LAS QUE NO SE LES ASIGNA NINGÚN AUTOBÚS?
-
 def main():
 
     # Comprobaciones

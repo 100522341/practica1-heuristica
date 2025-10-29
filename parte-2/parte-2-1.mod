@@ -27,12 +27,7 @@ s.t. CapacidadFranja {j in FRANJAS}:
 
 /* Constraint2: cada franja tiene asignado como máx un autobús: */
 s.t. AsignacionAutobus {i in BUSES}:
-	sum{j in FRANJAS} x[i,j] + y[i]<= 1;
+	sum{j in FRANJAS} x[i,j] + y[i]= 1;
 
 /* Si un autobús está asignado a una franja, el sum = 1, y[i] vale 0. Eoc y[i] = 1*/
 
-/* Constraint3: restringimos la variable auxiliar y */
-s.t. AuxY {i in BUSES}:
-	y[i] = 1 - sum{j in FRANJAS} x[i, j];
-
-/* TAMBIÉN PODEMOS PONER CONSTRAINT2 = 1 Y QUITAR CONSTRAINT3*/

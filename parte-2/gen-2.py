@@ -148,7 +148,6 @@ def ejecutar_glpk(mod_file, dat_file):
         output_text = file.read()
 
     # Verificamos si GLPK encontró una solución óptima
-    # TODO: manejo de soluciones no factibles
     if "OPTIMAL SOLUTION FOUND" not in result.stdout:
         return("GLPK no encontró una solución factible para el problema.")
 
